@@ -70,7 +70,6 @@ You can customize the application by modifying the `app.py` file. The main compo
 
 Feel free to modify these functions to suit your specific requirements.
 
-
 ## Acknowledgements
 
 - [AssemblyAI](https://www.assemblyai.com/) for providing the LeMUR API
