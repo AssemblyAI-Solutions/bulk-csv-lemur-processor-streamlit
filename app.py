@@ -12,8 +12,11 @@ def parse_json_from_resp(response_string):
     start_index = response_string.find('[')
     end_index = response_string.rfind(']') + 1
     json_array_string = response_string[start_index:end_index]
-    response_json = json.loads(json_array_string)
-    return response_json
+    try:
+        response_json = json.loads(json_array_string)
+        return response_json
+    except:
+        return []
 
 def count_yes(arr):
     points = sum(1 for n in arr if n['answer'] == 'yes')

@@ -70,9 +70,6 @@ You can customize the application by modifying the `app.py` file. The main compo
 
 Feel free to modify these functions to suit your specific requirements.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
