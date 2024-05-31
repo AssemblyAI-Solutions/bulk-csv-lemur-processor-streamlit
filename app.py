@@ -28,13 +28,14 @@ def process_row(row, results, prompt):
 
     try:
         result = transcript.lemur.task(prompt)
+        row['lemur_response'] = result.response
+        negative_questions = parse_json_from_resp(result.response)
     except:
-        result = 'LeMUR Request Failed.'
+        result = 'LeMUR Request Failed'
+        row['lemur_response'] = 'LeMUR Request Failed'
+        negative_questions = parse_json_from_resp('LeMUR Request Failed')
 
 
-    row['lemur_response'] = result.response
-
-    negative_questions = parse_json_from_resp(result.response)
     number_occurred = count_yes(negative_questions)
 
     row['number_occurred'] = number_occurred
