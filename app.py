@@ -26,7 +26,11 @@ def process_row(row, results, prompt):
     transcript_id = row['transcriptid']
     transcript = aai.Transcript.get_by_id(transcript_id)
 
-    result = transcript.lemur.task(prompt)
+    try:
+        result = transcript.lemur.task(prompt)
+    except:
+        result = 'LeMUR Request Failed.'
+
 
     row['lemur_response'] = result.response
 
