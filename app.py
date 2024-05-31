@@ -24,9 +24,9 @@ def count_yes(arr):
 
 def process_row(row, results, prompt):
     transcript_id = row['transcriptid']
-    transcript = aai.Transcript.get_by_id(transcript_id)
 
     try:
+        transcript = aai.Transcript.get_by_id(transcript_id)
         result = transcript.lemur.task(prompt)
         row['lemur_response'] = result.response
         negative_questions = parse_json_from_resp(result.response)
