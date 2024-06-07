@@ -6,6 +6,7 @@ import json
 import base64
 import io
 import csv
+import time
 
 
 def parse_json_from_resp(response_string):
@@ -50,16 +51,22 @@ def process_csv(uploaded_file, prompt):
 
     results = []
     threads = []
+    batch_start_time = time.time()
 
     for row in reader:
         thread = threading.Thread(target=process_row, args=(row, results, prompt))
         threads.append(thread)
         thread.start()
 
-        if len(threads) == 10:
+        if len(threads) == 20:
             for thread in threads:
                 thread.join()
             threads = []
+
+            elapsed_time = time.time() - batch_start_time
+            if elapsed_time < 60:
+                time.sleep(60 - elapsed_time)
+            batch_start_time = time.time()
 
     for thread in threads:
         thread.join()
