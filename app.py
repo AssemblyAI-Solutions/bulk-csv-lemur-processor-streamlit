@@ -58,7 +58,7 @@ def process_csv(uploaded_file, prompt):
         threads.append(thread)
         thread.start()
 
-        if len(threads) == 20:
+        if len(threads) == 10:
             for thread in threads:
                 thread.join()
             threads = []
