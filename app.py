@@ -30,6 +30,8 @@ def make_lemur_request(transcript_id, prompt, api_key):
     }
     data = {
         "prompt": prompt,
+        "final_model": "anthropic/claude-3-5-sonnet",
+        "max_output_size": 4000,
         "transcript_ids": [transcript_id]
     }
     response = requests.post(url, headers=headers, json=data)
