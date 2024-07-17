@@ -110,7 +110,7 @@ def process_csv(uploaded_file, prompt, api_key):
             elapsed = time.time() - start_time
             time_elapsed.text(f"Time elapsed: {str(timedelta(seconds=int(elapsed)))}")
 
-            limit = headers.get('x-ratelimit-limit', 'N/A')
+            limit = int(headers.get('x-ratelimit-limit', '0'))
             remaining = int(headers.get('x-ratelimit-remaining', '0'))
             reset = int(headers.get('x-ratelimit-reset', '60'))
             rate_limit_info.text(f"Rate Limit: {limit}, Remaining: {remaining}, Reset: {reset} seconds")
@@ -127,11 +127,12 @@ def process_csv(uploaded_file, prompt, api_key):
                 
                 remaining = int(headers.get('x-ratelimit-remaining', '0'))
                 rate_limit_info.text(f"Rate Limit: {limit}, Remaining: {remaining}, Reset: {reset} seconds")
-                
-                if remaining > 20:
-                    batch_size = 10
-                else:
-                    batch_size = 1
+            
+            # Update batch size based on remaining requests
+            if remaining <= 20:
+                batch_size = max(1, remaining - 10)  # Ensure batch size is at least 1
+            else:
+                batch_size = 10
             
             batch = []
 
@@ -164,9 +165,14 @@ def main():
     st.title("AssemblyAI LeMUR CSV Processor")
 
     st.write("""
-    **Note:** Processing may take over 10 minutes for large files. 
-    For optimal performance, we recommend using CSVs with 200-300 rows. 
-    Larger files can be processed but may take significantly longer.
+    **Note:** Processing time depends on your rate limit and file size. 
+    The number of rows you can process is based on your rate limit. 
+    A conservative estimate for the maximum number of rows you can process is:
+    (Your Rate Limit - 10) * 10
+    
+    For example, if your rate limit is 30, you should limit your file to about 200 rows.
+    Larger files can be processed but may take significantly longer due to rate limiting pauses.
+    
     The CSV must contain a column named either 'transcriptid' or 'transcript_id'.
     """)
 
