@@ -147,6 +147,7 @@ def main():
 
     st.write("""
     **Note:** Processing time depends on your rate limit and file size. 
+    Streamlit requests timeout after about 10-15 minutes.
     The number of rows you can process is based on your rate limit. 
     A conservative estimate for the maximum number of rows you can process is:
     (Your Rate Limit - 10) * 10
