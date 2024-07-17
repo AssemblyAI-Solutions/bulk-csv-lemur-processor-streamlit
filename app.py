@@ -59,22 +59,39 @@ def process_csv(uploaded_file, prompt, api_key):
     fieldnames = reader.fieldnames + ['lemur_response', 'number_occurred']
 
     results = []
+    total_rows = sum(1 for row in csv.DictReader(io.StringIO(file_contents)))  # Count total rows
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    rate_limit_info = st.empty()
+
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = []
         for row in reader:
             future = executor.submit(process_row, row, prompt, api_key)
             futures.append(future)
 
-        for future in as_completed(futures):
+        for i, future in enumerate(as_completed(futures)):
             row, headers = future.result()
             results.append(row)
 
-            remaining = int(headers.get('x-ratelimit-remaining', '0'))
-            reset = int(headers.get('x-ratelimit-reset', '60'))
+            # Update progress
+            progress = (i + 1) / total_rows
+            progress_bar.progress(progress)
+            status_text.text(f"Completed {i+1}/{total_rows} requests")
 
-            if remaining <= 10:
-                time.sleep(reset + 1)
+            # Log rate limit information
+            limit = headers.get('x-ratelimit-limit', 'N/A')
+            remaining = headers.get('x-ratelimit-remaining', 'N/A')
+            reset = headers.get('x-ratelimit-reset', 'N/A')
+            rate_limit_info.text(f"Rate Limit: {limit}, Remaining: {remaining}, Reset: {reset} seconds")
 
+            if int(remaining) <= 10:
+                wait_time = int(reset) + 1
+                st.warning(f"Rate limit approaching. Waiting for {wait_time} seconds.")
+                time.sleep(wait_time)
+
+    progress_bar.progress(1.0)
+    status_text.text(f"Completed all {total_rows} requests")
     return fieldnames, results
 
 def download_csv(fieldnames, results):
