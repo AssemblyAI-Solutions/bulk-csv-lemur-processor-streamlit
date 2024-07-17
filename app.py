@@ -8,20 +8,6 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import timedelta
 
-def parse_json_from_resp(response_string):
-    start_index = response_string.find('[')
-    end_index = response_string.rfind(']') + 1
-    json_array_string = response_string[start_index:end_index]
-    try:
-        response_json = json.loads(json_array_string)
-        return response_json
-    except:
-        return []
-
-def count_yes(arr):
-    points = sum(1 for n in arr if n['answer'] == 'yes')
-    return points
-
 def make_lemur_request(transcript_id, prompt, api_key):
     url = "https://api.assemblyai.com/lemur/v3/generate/task"
     headers = {
@@ -30,8 +16,6 @@ def make_lemur_request(transcript_id, prompt, api_key):
     }
     data = {
         "prompt": prompt,
-        "final_model": "anthropic/claude-3-5-sonnet",
-        "max_output_size": 4000,
         "transcript_ids": [transcript_id]
     }
     response = requests.post(url, headers=headers, json=data)
@@ -53,13 +37,9 @@ def process_row(row, prompt, api_key):
         response.raise_for_status()
         result = response.json()
         row['lemur_response'] = result['response']
-        negative_questions = parse_json_from_resp(result['response'])
     except:
         row['lemur_response'] = 'LeMUR Request Failed'
-        negative_questions = []
 
-    number_occurred = count_yes(negative_questions)
-    row['number_occurred'] = number_occurred
     return row, response.headers
 
 def process_batch(batch, prompt, api_key):
@@ -83,7 +63,7 @@ def process_csv(uploaded_file, prompt, api_key):
         st.error("CSV must contain a column named either 'transcriptid' or 'transcript_id'")
         return None, None
 
-    fieldnames = reader.fieldnames + ['lemur_response', 'number_occurred']
+    fieldnames = reader.fieldnames + ['lemur_response']
 
     results = []
     total_rows = sum(1 for row in csv.DictReader(io.StringIO(file_contents)))
@@ -130,7 +110,6 @@ def process_csv(uploaded_file, prompt, api_key):
                 remaining = int(headers.get('x-ratelimit-remaining', '0'))
                 rate_limit_info.text(f"Rate Limit: {limit}, Remaining: {remaining}, Reset: {reset} seconds")
             
-            # Update batch size based on remaining requests
             if remaining <= 20:
                 batch_size = max(1, remaining - 10)  # Ensure batch size is at least 1
             else:
