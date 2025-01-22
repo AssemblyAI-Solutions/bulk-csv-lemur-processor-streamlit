@@ -98,7 +98,9 @@ def process_csv(uploaded_file, prompt, api_key):
             reset = int(headers.get('x-ratelimit-reset', '60'))
             rate_limit_info.text(f"Rate Limit: {limit}, Remaining: {remaining}, Reset: {reset} seconds")
 
-            if remaining <= 10:
+            # if remaining <= 10:
+            # updating this below since the customer has 400+ concurrency
+            if remaining <= 50:
                 wait_message = st.empty()
                 wait_message.warning(f"Rate limit approaching. Waiting for {reset + 1} seconds.")
                 time.sleep(reset + 1)
